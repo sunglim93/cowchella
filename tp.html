@@ -36,12 +36,14 @@
             
             //create texture
             let texture = gl.createTexture();
-            let image = new Image();
-            image.src = 'metal_scale.png';
-            image.onload = on_load;
+            let metal_image = new Image();
+            metal_image.src = 'metal_scale.png';
+            //let dirt_image = new Image();
+            //dirt_image.src = 'minecraft_dirt.png';
+            metal_image.onload = on_load;
+            //dirt_image.onload = on_load;
             function on_load(){
-                // gl.bindTexture(gl.TEXTURE_2D, texture);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this);
                 gl.generateMipmap(gl.TEXTURE_2D);
             };
 
@@ -177,7 +179,7 @@
 
             let keys = Keys.start_listening();
             let cam = new Camera();
-            cam.translate( 0, 0, -1.5 );
+            cam.translate( 0, 0, -1.5);
             const camera_pos = {x: cam.x, y:cam.y, z: cam.z};
 
             set_uniform_vec3(gl, shader_program, 'sun_dir', 1.0, 0.0, 0.0);
@@ -192,44 +194,37 @@
             let projection = Mat4.perspective_fovx( 0.25, 4 / 3, 0.25, 64 );
 
             let rootNode = new Node();
-            rootNode.position = new Vec4(0,0,0,1);
-            rootNode.scale = new Vec4(1,1,1,1);
-            rootNode.roll = 0;
-            rootNode.pitch = 0;
-            rootNode.yaw = 0;
-            rootNode.data = null;
-8
             let childNode = rootNode.add_child();
             childNode.data = rootSphere;
+            //childNode.position = new Vec4(0,0,0,1);
 
-            let secondSphere = Mesh.make_uv_sphere(gl, shader_program, 20, material);
+            let secondSphere = Mesh.box(gl, shader_program, 1,1,1, material);
             let secondChildNode = childNode.add_child();
             secondChildNode.data = secondSphere;
-            secondChildNode.position = new Vec4(2,0,0,1)
-            secondChildNode.get_matrix();
+            secondChildNode.position = new Vec4(-1,0,0,1);
+            console.log(rootNode.children);
+            for(let child of rootNode.children) {
+                console.log(child.get_matrix());
+                for(let c of child.children) {
+                    console.log(c.get_matrix())
+                }
+            }
 
             function render( now ) {
-                last_update = now;
+                let dt = (now - last_update) / 1000;
+
                 gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
-
-                // note, normally projection would be a separate matrix (for lighting calculations)
-                // however, we haven't covered lighting yet, so let's demonstrate that we can
-                // combine transformations like this.
-                let model = Mat4.identity();
-
-                set_uniform_matrix4(gl, shader_program, 'model', model.data); //model in this case is just the identity matrix
-                
-                model = model.mul( projection );
-                model = model.mul( cam.get_view_matrix() );
-                
-                set_uniform_matrix4(gl, shader_program, "modelview", model.data ); //modelview is view (projection) multiplied with the model
-                set_uniform_matrix4(gl, shader_program, 'view', projection.data); //view matrix
-                set_uniform_vec3(gl, shader_program, 'camera_pos', cam.x, cam.y, cam.z); //update camera pos every render
-                
                 let jobs = []; //render jobs
-                generate_render_jobs(Mat4.identity(), rootNode, jobs);
+                generate_render_jobs(new Mat4(), rootNode, jobs);
                 for (let job of jobs){
-                    job.mesh.sphere_render(gl); //custom render function in mesh.js
+                    let model = job.matrix;
+                    set_uniform_matrix4(gl, shader_program, 'model', model.data); //model in this case is just the identity matrix
+                    model = model.mul(projection)
+                    model = model.mul(cam.get_view_matrix());
+                    set_uniform_matrix4(gl, shader_program, "modelview", model.data ); //modelview is view (projection) multiplied with the model
+                    set_uniform_matrix4(gl, shader_program, 'view', projection.data); //view matrix
+                    set_uniform_vec3(gl, shader_program, 'camera_pos', cam.x, cam.y, cam.z); //update camera pos every render
+                    job.mesh.render(gl); //custom render function in mesh.js
                 }
 
                 requestAnimationFrame( render );
@@ -263,21 +258,6 @@
                 }
 
                 return;
-
-                /* this is another way of doing the key map. 
-                   but make sure you understand how the key binding approach works!
-
-                if( keys.is_key_down( 'KeyW' ) ) {
-                    cam.move_in_direction( 0, 0, FLY_SPEED_PER_FRAME );
-                }
-                if( keys.is_key_down( 'KeyS' ) ) {
-                    cam.move_in_direction( 0, 0, -FLY_SPEED_PER_FRAME );
-                }
-                if( keys.is_key_down( 'KeyA' ) ) {
-                    cam.move_in_direction( -FLY_SPEED_PER_FRAME, 0, 0 );
-                }
-                etc ...
-                }*/
             }
             
             requestAnimationFrame( render );

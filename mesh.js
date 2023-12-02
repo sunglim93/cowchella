@@ -33,39 +33,51 @@ class Mesh {
         let hheight = height / 2.0;
         let hdepth = depth / 2.0;
 
+            //let normals = new Vec4(x, y, z, 0.0).norm();
+            //verts.push(normals.x, normals.y, normals.z);
+
+        let one = new Vec4(hwidth, -hheight, -hdepth, 0.0).norm;
+        let two = new Vec4(-hwidth, -hheight, -hdepth, 0.0).norm;
+        let three = new Vec4(-hwidth, hheight, -hdepth, 0.0).norm;
+        let four = new Vec4(hwidth, hheight, -hdepth, 0.0).norm;
+        let five = new Vec4(hwidth, -hheight, hdepth, 0.0).norm;
+        let six = new Vec4(-hwidth, -hheight, hdepth, 0.0).norm;
+        let seven = new Vec4(-hwidth, hheight, hdepth, 0.0).norm;
+        let eight = new Vec4(hwidth, hheight, hdepth, 0.0).norm;
+
         let verts = [
-            //x, y, z, r, g, b, a, u, v
-            hwidth, -hheight, -hdepth, 1.0, 0.0, 0.0, 1.0,    0.25, 0.5, //0
-            hwidth, -hheight, -hdepth, 1.0, 0.0, 0.0, 1.0,    0.25, 0.5,//1
-            hwidth, -hheight, -hdepth, 1.0, 0.0, 0.0, 1.0,    0.5, 0.75,//2
+            //x, y, z, r, g, b, a, u, v, normals
+            hwidth, -hheight, -hdepth, 1.0, 0.0, 0.0, 1.0,    0.25, 0.5, one.x, one.y, one.z,//0
+            hwidth, -hheight, -hdepth, 1.0, 0.0, 0.0, 1.0,    0.25, 0.5, one.x, one.y, one.z,//1
+            hwidth, -hheight, -hdepth, 1.0, 0.0, 0.0, 1.0,    0.5, 0.75, one.x,one.y,one.z, //2
 
-            -hwidth, -hheight, -hdepth, 0.0, 1.0, 0.0, 1.0,   0, 0.5, //3
-            -hwidth, -hheight, -hdepth, 0.0, 1.0, 0.0, 1.0,   1, 0.5,//4
-            -hwidth, -hheight, -hdepth, 0.0, 1.0, 0.0, 1.0,   0.75, 0.75, //5
+            -hwidth, -hheight, -hdepth, 0.0, 1.0, 0.0, 1.0,   0, 0.5, two.x,two.y,two.z,//3
+            -hwidth, -hheight, -hdepth, 0.0, 1.0, 0.0, 1.0,   1, 0.5, two.x, two.y, two.z,//4
+            -hwidth, -hheight, -hdepth, 0.0, 1.0, 0.0, 1.0,   0.75, 0.75, two.x,two.y,two.z,//5
 
-            -hwidth, hheight, -hdepth, 0.0, 0.0, 1.0, 1.0,   0, 0.25, //6 
-            -hwidth, hheight, -hdepth, 0.0, 0.0, 1.0, 1.0,   0.75, 0,//7
-            -hwidth, hheight, -hdepth, 0.0, 0.0, 1.0, 1.0,   1, 0.25,//8
+            -hwidth, hheight, -hdepth, 0.0, 0.0, 1.0, 1.0,   0, 0.25, three.x, three.y, three.z,//6 
+            -hwidth, hheight, -hdepth, 0.0, 0.0, 1.0, 1.0,   0.75, 0,three.x, three.y, three.z,//7
+            -hwidth, hheight, -hdepth, 0.0, 0.0, 1.0, 1.0,   1, 0.25,three.x, three.y, three.z,//8
 
-            hwidth, hheight, -hdepth, 1.0, 1.0, 0.0, 1.0,    0.25, 0.25, //9
-            hwidth, hheight, -hdepth, 1.0, 1.0, 0.0, 1.0,    0.25, 0.25,//10
-            hwidth, hheight, -hdepth, 1.0, 1.0, 0.0, 1.0,    0.5, 0, //11  
+            hwidth, hheight, -hdepth, 1.0, 1.0, 0.0, 1.0,    0.25, 0.25, four.x, four.y, four.z,//9
+            hwidth, hheight, -hdepth, 1.0, 1.0, 0.0, 1.0,    0.25, 0.25,four.x, four.y, four.z,//10
+            hwidth, hheight, -hdepth, 1.0, 1.0, 0.0, 1.0,    0.5, 0, four.x, four.y, four.z,//11  
 
-            hwidth, -hheight, hdepth, 1.0, 0.0, 1.0, 1.0,    0.5, 0.5,//12
-            hwidth, -hheight, hdepth, 1.0, 0.0, 1.0, 1.0,    0.5, 0.5, //13
-            hwidth, -hheight, hdepth, 1.0, 0.0, 1.0, 1.0,    0.5, 0.5, //14
+            hwidth, -hheight, hdepth, 1.0, 0.0, 1.0, 1.0,    0.5, 0.5, five.x, five.y, five.z,//12
+            hwidth, -hheight, hdepth, 1.0, 0.0, 1.0, 1.0,    0.5, 0.5, five.x, five.y, five.z,//13
+            hwidth, -hheight, hdepth, 1.0, 0.0, 1.0, 1.0,    0.5, 0.5,five.x, five.y, five.z,//14
 
-            -hwidth, -hheight, hdepth, 0.0, 1.0, 1.0, 1.0,   0.75, 0.5,//15
-            -hwidth, -hheight, hdepth, 0.0, 1.0, 1.0, 1.0,   0.75, 0.5,//16
-            -hwidth, -hheight, hdepth, 0.0, 1.0, 1.0, 1.0,   0.75, 0.5,//17
+            -hwidth, -hheight, hdepth, 0.0, 1.0, 1.0, 1.0,   0.75, 0.5, six.x, six.y, six.z, //15
+            -hwidth, -hheight, hdepth, 0.0, 1.0, 1.0, 1.0,   0.75, 0.5,six.x, six.y, six.z, //16
+            -hwidth, -hheight, hdepth, 0.0, 1.0, 1.0, 1.0,   0.75, 0.5,six.x, six.y, six.z, //17
 
-            -hwidth, hheight, hdepth, 0.5, 0.5, 1.0, 1.0,    0.75, 0.25,//18
-            -hwidth, hheight, hdepth, 0.5, 0.5, 1.0, 1.0,    0.75, 0.25,//19
-            -hwidth, hheight, hdepth, 0.5, 0.5, 1.0, 1.0,    0.75, 0.25, //20
+            -hwidth, hheight, hdepth, 0.5, 0.5, 1.0, 1.0,    0.75, 0.25,seven.x, seven.y, seven.z,//18
+            -hwidth, hheight, hdepth, 0.5, 0.5, 1.0, 1.0,    0.75, 0.25,seven.x, seven.y, seven.z,//19
+            -hwidth, hheight, hdepth, 0.5, 0.5, 1.0, 1.0,    0.75, 0.25,seven.x, seven.y, seven.z, //20
 
-            hwidth, hheight, hdepth, 1.0, 1.0, 0.5, 1.0,     0.5, 0.25,//21
-            hwidth, hheight, hdepth, 1.0, 1.0, 0.5, 1.0,     0.5, 0.25, //22
-            hwidth, hheight, hdepth, 1.0, 1.0, 0.5, 1.0,     0.5, 0.25//23
+            hwidth, hheight, hdepth, 1.0, 1.0, 0.5, 1.0,     0.5, 0.25,eight.x, eight.y, eight.z,//21
+            hwidth, hheight, hdepth, 1.0, 1.0, 0.5, 1.0,     0.5, 0.25, eight.x, eight.y, eight.z,//22
+            hwidth, hheight, hdepth, 1.0, 1.0, 0.5, 1.0,     0.5, 0.25, eight.x, eight.y, eight.z,//23
         ];
 
         let indis = [
@@ -87,6 +99,7 @@ class Mesh {
             19, 7, 23, 23, 7, 11, //top
             5, 17, 2, 2, 17, 14 //bottom
         ];
+        gl.bindTexture(gl.TEXTURE_2D, material.texture);
 
         return new Mesh( gl, program, verts, indis );
     }
@@ -144,7 +157,7 @@ class Mesh {
      * 
      * @param {WebGLRenderingContext} gl 
      */
-   sphere_render( gl ) {
+   render( gl ) {
         gl.cullFace( gl.BACK );
         gl.enable( gl.CULL_FACE );
         
@@ -187,12 +200,11 @@ class Mesh {
         gl.drawElements( gl.TRIANGLES, this.n_indis, gl.UNSIGNED_SHORT, 0 );
     }
 
-
+/*
     /**
      * Render the mesh. Does NOT preserve array/index buffer or program bindings! 
      * 
      * @param {WebGLRenderingContext} gl 
-     */
     render( gl ) {
         gl.cullFace( gl.BACK );
         gl.enable( gl.CULL_FACE );
@@ -224,6 +236,7 @@ class Mesh {
 
         gl.drawElements( gl.TRIANGLES, this.n_indis, gl.UNSIGNED_SHORT, 0 );
     }
+    */
 
     /**
      * Parse the given text as the body of an obj file.
