@@ -249,12 +249,22 @@ class Mesh {
      */
     static from_obj_text( gl, program, text, texture_url) {
         let lines = text.split( /\r?\n/ );
-
+        let tex = gl.createTexture();
+        let tex_img = new Image();
+        tex_img.src = texture_url;
+        tex_img.onload = on_load_metal;
+        function on_load_metal(){
+            gl.bindTexture(gl.TEXTURE_2D, tex);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tex_img);
+            gl.generateMipmap(gl.TEXTURE_2D);
+        };
+        let material = new Material(1,1,1,1, tex);
         let verts = [];
-        let indis = [];
+        let vertices = [];
         let uv = [];
+        let norms = [];
+        let indis = [];
         
-
         for( let line of lines ) {
             let trimmed = line.trim();
             let parts = trimmed.split( /(\s+)/ );
@@ -266,36 +276,55 @@ class Mesh {
                 continue; 
             }
             else if(parts[0] == 'vt') {
-                console.log("uv coord" + parts[2] + parts[4]);
-                //verts.push(parseFloat(parts[1]))
+                // console.log("uv coord" + parts[2] + parts[4]);
+                uv.push(parseFloat(parts[2]), parseFloat(parts[4]));
             }
             else if(parts[0]=='vn') {
                 // vertex normal!
+                norms.push(parseFloat(parts[2]), parseFloat(parts[4]), parseFloat(parts[6]));
             }
             else if( parts[0] == 'v') {
                 
-                verts.push( parseFloat( parts[2] ) );
-                verts.push( parseFloat( parts[4] ) );
-                verts.push( parseFloat( parts[6] ) );
+                vertices.push( parseFloat( parts[2] ) );
+                vertices.push( parseFloat( parts[4] ) );
+                vertices.push( parseFloat( parts[6] ) );
                 
                 // color data
-                verts.push( 1, 1, 1, 1 );
+                vertices.push( 1.0, 1.0, 1.0, 1.0 );
             }
             else if( parts[0] == 'f' ) {
-                indis.push( parseInt( parts[2] ) - 1 );
-                indis.push( parseInt( parts[4] ) - 1 );
-                indis.push( parseInt( parts[6] ) - 1 );
+                let indices = [];
+                for (let i = 1; i < parts.length; i++) {
+                    let number = parseInt(parts[i].split('/')[0]) - 1;
+                    indices.push(number);
+                }
+                indis.push(...indices);
             }
             else {
                 console.log( parts) ;
                 throw new Error( 'unsupported obj command: ', parts[0], parts );
             }
         }
+        let vCount = 0;
+        let uCount = 0;
+        let normCount = 0;
+
+        for (let i = 0; i < vertices.length; i ++) {
+            for (let j = 0; j < 7; j++){
+                verts.push(vertices[vCount++]);
+            }
+            for (let j = 0; j < 2; j++){
+                verts.push(uv[uCount++]);
+            }
+            for (let j = 0; j < 3; j ++){
+                verts.push(norms[normCount++]);
+            }
+        }
 		
 		//console.log( verts.slice(540, 600) )
 		// console.log( indis.slice(540, 600) )
         
-        return new Mesh( gl, program, verts, indis );
+        return new Mesh( gl, program, verts, indis, material );
     }
 
     /**

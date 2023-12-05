@@ -197,7 +197,7 @@
             };
             set_render_params( gl );
 
-            Mesh.from_obj_file(gl, "cow.obj", shader_program, () => {
+            let cow = Mesh.from_obj_file(gl, "cow.obj", shader_program, "metal_scale.png", () => {
                 console.log("done");
             });
             let last_update = performance.now();
@@ -230,7 +230,7 @@
 
             let rootNode = new Node();
             let childNode = rootNode.add_child();
-            childNode.data = rootSphere;
+            childNode.data = cow;
             childNode.position = new Vec4(0,0,0,1);
             childNode.pitch = 0.25;
             childNode.yaw = 0.1;
