@@ -258,7 +258,7 @@ class Mesh {
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tex_img);
             gl.generateMipmap(gl.TEXTURE_2D);
         };
-        let material = new Material(1,1,1,1, tex);
+        let material = new Material(0.3,0.1,0.1,1, tex);
         let verts = [];
         let vertices = [];
         let uv = [];
@@ -334,10 +334,17 @@ class Mesh {
      * @param {WebGLProgram} program
      * @param {function} f the function to call and give mesh to when finished.
      */
-    static from_obj_file( gl, file_name, program, f ) {
+    static from_obj_file( gl, file_name, program, texture_url, f ) {
         let request = new XMLHttpRequest();
+
+        request.onload = () => { 
+            let loaded_mesh = Mesh.from_obj_text(gl, program, request.responseText, texture_url);
+            console.log(loaded_mesh);
+            f(loaded_mesh);
+        }
         
         // the function that will be called when the file is being loaded
+        /*
         request.onreadystatechange = function() {
             // console.log( request.readyState );
 
@@ -347,14 +354,20 @@ class Mesh {
             }
 
             // now we know the file exists and is ready
-            let loaded_mesh = Mesh.from_obj_text( gl, program, request.responseText );
+            cow_mesh = Mesh.from_obj_text( gl, program, request.responseText, texture_url);
+            //console.log(loaded_mesh);
 
             console.log( 'loaded ', file_name );
-            f( loaded_mesh );
+            //f(loaded_mesh);
         };
+        */
 
         
         request.open( 'GET', file_name ); // initialize request. 
         request.send();                   // execute request
+    }
+
+    static empty_mesh(gl) {
+        return new Mesh(gl,0,0,0,0);
     }
 }

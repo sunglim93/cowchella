@@ -30,6 +30,7 @@
         <script src = "node.js"></script>
         <script src = "render_mesh.js"></script>
         <script>
+            let cow_mesh;
             let canvas = document.getElementById( 'the-canvas' );
             /** @type {WebGLRenderingContext} */
             let gl = canvas.getContext( 'webgl2' );
@@ -196,103 +197,120 @@
                 gl.generateMipmap(gl.TEXTURE_2D);
             };
             set_render_params( gl );
-
-            let cow = Mesh.from_obj_file(gl, "cow.obj", shader_program, "metal_scale.png", () => {
-                console.log("done");
-            });
-            let last_update = performance.now();
-            const DESIRED_TICK_RATE = 60;
-            const DESIRED_MSPT = 1000.0 / DESIRED_TICK_RATE;
-
-            const ROTATION_SPEED = 0.125; // eighth turn per second
-            const ROTATION_SPEED_PER_FRAME = ROTATION_SPEED / DESIRED_TICK_RATE;
-
-            const FLY_SPEED = 1;    // units per second
-            const FLY_SPEED_PER_FRAME = FLY_SPEED / DESIRED_TICK_RATE;
-
-            let keys = Keys.start_listening();
-            let cam = new Camera();
-            cam.translate( 0, 0, -1.5);
-            const camera_pos = {x: cam.x, y:cam.y, z: cam.z};
-
-            set_uniform_vec3(gl, shader_program, 'sun_dir', 1.0, 0.0, 0.0);
-            set_uniform_vec3(gl, shader_program, 'sun_color', 1.0, 1.0, 1.0);
-            set_uniform_vec3(gl, shader_program, 'red_pos', -1.0, -1.0, 0.0);
-            set_uniform_vec3(gl, shader_program, 'red_color', 1.0, 0.0, 0.0);
-
-
-            //trying to create a second sphere that is the child of the first sphere here
-            const metal_material = new Material(0.25, 1.0, 2.0, 4, metal_texture);
-            //const metal_material = new Material(0.25, 1.0, 2.0, 4, texture);
-            const dirt_material = new Material(0.25, 1.0, 1.0, 1, dirt_texture);
-            let rootSphere = Mesh.make_uv_sphere( gl, shader_program, 20, metal_material);
-            let projection = Mat4.perspective_fovx( 0.25, 4 / 3, 0.25, 64 );
-
-            let rootNode = new Node();
-            let childNode = rootNode.add_child();
-            childNode.data = cow;
-            childNode.position = new Vec4(0,0,0,1);
-            childNode.pitch = 0.25;
-            childNode.yaw = 0.1;
-
-            let secondSphere = Mesh.box(gl, shader_program, 1,1,1, dirt_material);
-            let secondChildNode = childNode.add_child();
-            secondChildNode.data = secondSphere;
-            secondChildNode.position = new Vec4(-1,0,0,1);
-
-
-            function render( now ) {
-                let dt = (now - last_update) / 1000;
-
-                gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
-                let jobs = []; //render jobs
-                set_uniform_vec3(gl, shader_program, 'camera_pos', cam.x, cam.y, cam.z); //update camera pos every render
-                set_uniform_matrix4(gl, shader_program, 'view', projection.data); //view matrix
-                generate_render_jobs(new Mat4(), rootNode, jobs);
-                for (let job of jobs){
-                    let model = job.matrix;
-                    set_uniform_matrix4(gl, shader_program, 'model', model.data); //model in this case is just the identity matrix
-                    model = cam.get_view_matrix().mul(model);
-                    model = projection.mul(model);
-                    set_uniform_matrix4(gl, shader_program, "modelview", model.data ); //modelview is view (projection) multiplied with the model
-                    job.mesh.render(gl); //custom render function in mesh.js
-                }
-
-                requestAnimationFrame( render );
-            }
-
-            const KEYMAP = {
-                'KeyW': function() { cam.move_in_direction( 0, 0, FLY_SPEED_PER_FRAME ); },
-                'KeyS': function() { cam.move_in_direction( 0, 0, -FLY_SPEED_PER_FRAME ); },
-                'KeyA': function() { cam.move_in_direction( -FLY_SPEED_PER_FRAME, 0, 0 ); },
-                'KeyD': function() { cam.move_in_direction( FLY_SPEED_PER_FRAME, 0, 0 ); },
-                'Space': function() { cam.translate( 0, FLY_SPEED_PER_FRAME, 0 ); },
-                'KeyC': function() { cam.translate( 0, -FLY_SPEED_PER_FRAME, 0 ); },
-                'KeyQ': function() { cam.add_roll( -ROTATION_SPEED_PER_FRAME ); },
-                'KeyE': function() { cam.add_roll( ROTATION_SPEED_PER_FRAME ); },
-                'ArrowLeft': function() { cam.add_yaw( -ROTATION_SPEED_PER_FRAME ); },
-                'ArrowRight': function() { cam.add_yaw( ROTATION_SPEED_PER_FRAME ); },
-                'ArrowUp': function() { cam.add_pitch( -ROTATION_SPEED_PER_FRAME ); },
-                'ArrowDown': function() { cam.add_pitch( ROTATION_SPEED_PER_FRAME ); },
+            let cow_texture = gl.createTexture();
+            let cow_image = new Image();
+            cow_image.src = 'minecraft_dirt.png';
+            cow_image.onload = on_load_cow;
+            function on_load_cow(){
+                gl.bindTexture(gl.TEXTURE_2D, dirt_texture);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, cow_image);
+                gl.generateMipmap(gl.TEXTURE_2D);
             };
+            set_render_params( gl );
+            let cow_material = new Material(1,1,1,1, cow_texture);
+            //var cow_mesh = Mesh.empty_mesh(gl);
+            //console.log(cow_mesh);
+            let test=10;
+            Mesh.from_obj_file(gl, "cow.obj", shader_program, "CowImage.png", function (loaded_mesh){
+                cow_mesh = loaded_mesh;
+                build_and_run_scene();
+            });
 
-            function update() {
-                let keys_down = keys.keys_down_list();
-                const camera_pos = {x: cam.x, y:cam.y, z:cam.z}; //update camera_pos
+            function build_and_run_scene() {
 
-                for( const key of keys_down ) {
-                   let bound_function = KEYMAP[ key ];
+                console.log(cow_mesh);
+                let last_update = performance.now();
+                const DESIRED_TICK_RATE = 60;
+                const DESIRED_MSPT = 1000.0 / DESIRED_TICK_RATE;
 
-                   if( bound_function ) {
-                       bound_function();
-                   }
+                const ROTATION_SPEED = 0.125; // eighth turn per second
+                const ROTATION_SPEED_PER_FRAME = ROTATION_SPEED / DESIRED_TICK_RATE;
+
+                const FLY_SPEED = 1;    // units per second
+                const FLY_SPEED_PER_FRAME = FLY_SPEED / DESIRED_TICK_RATE;
+
+                let keys = Keys.start_listening();
+                let cam = new Camera();
+                cam.translate( 0, 0, -1.5);
+                const camera_pos = {x: cam.x, y:cam.y, z: cam.z};
+
+                set_uniform_vec3(gl, shader_program, 'sun_dir', 1.0, 0.0, 0.0);
+                set_uniform_vec3(gl, shader_program, 'sun_color', 1.0, 1.0, 1.0);
+                set_uniform_vec3(gl, shader_program, 'red_pos', -1.0, -1.0, 0.0);
+                set_uniform_vec3(gl, shader_program, 'red_color', 1.0, 0.0, 0.0);
+
+
+                //trying to create a second sphere that is the child of the first sphere here
+                const metal_material = new Material(0.25, 1.0, 2.0, 4, metal_texture);
+                const dirt_material = new Material(0.25, 1.0, 1.0, 1, dirt_texture);
+                let rootSphere = Mesh.make_uv_sphere( gl, shader_program, 20, metal_material);
+                let projection = Mat4.perspective_fovx( 0.25, 4 / 3, 0.25, 64 );
+
+                let rootNode = new Node();
+                let childNode = rootNode.add_child();
+                childNode.data = cow_mesh;
+                childNode.position = new Vec4(0,0,0,1);
+                childNode.scale = new Vec4(0.1,0.1,0.1,1);
+
+                let secondSphere = Mesh.box(gl, shader_program, 1,1,1, dirt_material);
+                let secondChildNode = childNode.add_child();
+                secondChildNode.data = secondSphere;
+                secondChildNode.position = new Vec4(-5,0,0,1);
+
+
+                function render( now ) {
+                    let dt = (now - last_update) / 1000;
+
+                    gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+                    let jobs = []; //render jobs
+                    set_uniform_vec3(gl, shader_program, 'camera_pos', cam.x, cam.y, cam.z); //update camera pos every render
+                    set_uniform_matrix4(gl, shader_program, 'view', projection.data); //view matrix
+                    generate_render_jobs(new Mat4(), rootNode, jobs);
+                    for (let job of jobs){
+                        let model = job.matrix;
+                        set_uniform_matrix4(gl, shader_program, 'model', model.data); //model in this case is just the identity matrix
+                        model = cam.get_view_matrix().mul(model);
+                        model = projection.mul(model);
+                        set_uniform_matrix4(gl, shader_program, "modelview", model.data ); //modelview is view (projection) multiplied with the model
+                        job.mesh.render(gl); //custom render function in mesh.js
+                    }
+
+                    requestAnimationFrame( render );
                 }
 
-                return;
+                const KEYMAP = {
+                    'KeyW': function() { cam.move_in_direction( 0, 0, FLY_SPEED_PER_FRAME ); },
+                    'KeyS': function() { cam.move_in_direction( 0, 0, -FLY_SPEED_PER_FRAME ); },
+                    'KeyA': function() { cam.move_in_direction( -FLY_SPEED_PER_FRAME, 0, 0 ); },
+                    'KeyD': function() { cam.move_in_direction( FLY_SPEED_PER_FRAME, 0, 0 ); },
+                    'Space': function() { cam.translate( 0, FLY_SPEED_PER_FRAME, 0 ); },
+                    'KeyC': function() { cam.translate( 0, -FLY_SPEED_PER_FRAME, 0 ); },
+                    'KeyQ': function() { cam.add_roll( -ROTATION_SPEED_PER_FRAME ); },
+                    'KeyE': function() { cam.add_roll( ROTATION_SPEED_PER_FRAME ); },
+                    'ArrowLeft': function() { cam.add_yaw( -ROTATION_SPEED_PER_FRAME ); },
+                    'ArrowRight': function() { cam.add_yaw( ROTATION_SPEED_PER_FRAME ); },
+                    'ArrowUp': function() { cam.add_pitch( -ROTATION_SPEED_PER_FRAME ); },
+                    'ArrowDown': function() { cam.add_pitch( ROTATION_SPEED_PER_FRAME ); },
+                };
+
+                function update() {
+                    let keys_down = keys.keys_down_list();
+                    const camera_pos = {x: cam.x, y:cam.y, z:cam.z}; //update camera_pos
+
+                    for( const key of keys_down ) {
+                    let bound_function = KEYMAP[ key ];
+
+                    if( bound_function ) {
+                        bound_function();
+                    }
+                    }
+
+                    return;
+                }
+                
+                requestAnimationFrame( render );
+                setInterval( update, DESIRED_MSPT );
             }
-            
-            requestAnimationFrame( render );
-            setInterval( update, DESIRED_MSPT );
         </script>
     </body>
 </html>
