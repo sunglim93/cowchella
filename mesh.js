@@ -159,8 +159,8 @@ class Mesh {
      * @param {WebGLRenderingContext} gl 
      */
    render( gl ) {
-        gl.cullFace( gl.BACK );
-        gl.enable( gl.CULL_FACE );
+        //gl.cullFace( gl.BACK );
+        //gl.enable( gl.CULL_FACE );
         
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.material.texture);
@@ -295,8 +295,10 @@ class Mesh {
             else if( parts[0] == 'f' ) {
                 let indices = [];
                 for (let i = 1; i < parts.length; i++) {
-                    let number = parseInt(parts[i].split('/')[0]) - 1;
-                    indices.push(number);
+                    let number = parseFloat(parts[i].split('/')[0]) - 1;
+                    if(! isNaN(parseFloat(number))) {
+                        indices.push(number);
+                    }
                 }
                 indis.push(...indices);
             }
@@ -308,8 +310,8 @@ class Mesh {
         let vCount = 0;
         let uCount = 0;
         let normCount = 0;
-
-        for (let i = 0; i < vertices.length; i ++) {
+        console.log(vertices.length/7);
+        for (let i = 0; i < (vertices.length/7); i ++) {
             for (let j = 0; j < 7; j++){
                 verts.push(vertices[vCount++]);
             }
@@ -320,9 +322,6 @@ class Mesh {
                 verts.push(norms[normCount++]);
             }
         }
-		
-		//console.log( verts.slice(540, 600) )
-		// console.log( indis.slice(540, 600) )
         
         return new Mesh( gl, program, verts, indis, material );
     }
