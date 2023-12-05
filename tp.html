@@ -33,20 +33,32 @@
             let canvas = document.getElementById( 'the-canvas' );
             /** @type {WebGLRenderingContext} */
             let gl = canvas.getContext( 'webgl2' );
+            /*
+            const metal_img = new Image();
+            const metal_texture = gl.createTexture();
+            metal_img.onload = () => {
+                gl.activateTexture(gl.TEXTURE0+1);
+                gl.bindTexture(gl.TEXTURE_2D, metal_texture);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, metal_img);
+                gl.generateMipmap(gl.TEXTURE_2D);
+                gl.active
+            }
+            metal_img.src = "metal_scale.png";
+            */
             
             //create texture
+            /*
             let texture = gl.createTexture();
-            let metal_image = new Image();
-            metal_image.src = 'metal_scale.png';
-            //let dirt_image = new Image();
-            //dirt_image.src = 'minecraft_dirt.png';
-            metal_image.onload = on_load;
-            //dirt_image.onload = on_load;
+            let image = new Image();
+            image.src = '2k_mercury.jpg';
+            image.onload = on_load;
             function on_load(){
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this);
+                //gl.bindTexture(gl.TEXTURE_2D, texture);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
                 gl.generateMipmap(gl.TEXTURE_2D);
+                let loc = gl.getAttribLocation()
             };
-
+            */
             function generate_render_jobs(parent_matrix, node, jobs){ //generate render jobs from slides
                 let matrix = parent_matrix.mul(node.get_matrix());
                 if (node.data != null) { //slides have this as this.data
@@ -56,6 +68,7 @@
                     generate_render_jobs(matrix, child, jobs);
                 }
             }
+
 
             let vertex_source = 
             `   #version 300 es
@@ -164,9 +177,29 @@
             let shader_program = 
                 create_compile_and_link_program( gl, vertex_source, fragment_source );
             gl.useProgram( shader_program );
-
+            let metal_texture = gl.createTexture();
+            let metal_image = new Image();
+            metal_image.src = 'metal_scale.png';
+            metal_image.onload = on_load_metal;
+            function on_load_metal(){
+                gl.bindTexture(gl.TEXTURE_2D, metal_texture);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, metal_image);
+                gl.generateMipmap(gl.TEXTURE_2D);
+            };
+            let dirt_texture = gl.createTexture();
+            let dirt_image = new Image();
+            dirt_image.src = 'minecraft_dirt.png';
+            dirt_image.onload = on_load_dirt;
+            function on_load_dirt(){
+                gl.bindTexture(gl.TEXTURE_2D, dirt_texture);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, dirt_image);
+                gl.generateMipmap(gl.TEXTURE_2D);
+            };
             set_render_params( gl );
 
+            Mesh.from_obj_file(gl, "cow.obj", shader_program, () => {
+                console.log("done");
+            });
             let last_update = performance.now();
             const DESIRED_TICK_RATE = 60;
             const DESIRED_MSPT = 1000.0 / DESIRED_TICK_RATE;
@@ -189,41 +222,39 @@
 
 
             //trying to create a second sphere that is the child of the first sphere here
-            const material = new Material(0.25, 1.0, 2.0, 4, texture);
-            let rootSphere = Mesh.make_uv_sphere( gl, shader_program, 20, material);
+            const metal_material = new Material(0.25, 1.0, 2.0, 4, metal_texture);
+            //const metal_material = new Material(0.25, 1.0, 2.0, 4, texture);
+            const dirt_material = new Material(0.25, 1.0, 1.0, 1, dirt_texture);
+            let rootSphere = Mesh.make_uv_sphere( gl, shader_program, 20, metal_material);
             let projection = Mat4.perspective_fovx( 0.25, 4 / 3, 0.25, 64 );
 
             let rootNode = new Node();
             let childNode = rootNode.add_child();
             childNode.data = rootSphere;
-            //childNode.position = new Vec4(0,0,0,1);
+            childNode.position = new Vec4(0,0,0,1);
+            childNode.pitch = 0.25;
+            childNode.yaw = 0.1;
 
-            let secondSphere = Mesh.box(gl, shader_program, 1,1,1, material);
+            let secondSphere = Mesh.box(gl, shader_program, 1,1,1, dirt_material);
             let secondChildNode = childNode.add_child();
             secondChildNode.data = secondSphere;
             secondChildNode.position = new Vec4(-1,0,0,1);
-            console.log(rootNode.children);
-            for(let child of rootNode.children) {
-                console.log(child.get_matrix());
-                for(let c of child.children) {
-                    console.log(c.get_matrix())
-                }
-            }
+
 
             function render( now ) {
                 let dt = (now - last_update) / 1000;
 
                 gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
                 let jobs = []; //render jobs
+                set_uniform_vec3(gl, shader_program, 'camera_pos', cam.x, cam.y, cam.z); //update camera pos every render
+                set_uniform_matrix4(gl, shader_program, 'view', projection.data); //view matrix
                 generate_render_jobs(new Mat4(), rootNode, jobs);
                 for (let job of jobs){
                     let model = job.matrix;
                     set_uniform_matrix4(gl, shader_program, 'model', model.data); //model in this case is just the identity matrix
-                    model = model.mul(projection)
-                    model = model.mul(cam.get_view_matrix());
+                    model = cam.get_view_matrix().mul(model);
+                    model = projection.mul(model);
                     set_uniform_matrix4(gl, shader_program, "modelview", model.data ); //modelview is view (projection) multiplied with the model
-                    set_uniform_matrix4(gl, shader_program, 'view', projection.data); //view matrix
-                    set_uniform_vec3(gl, shader_program, 'camera_pos', cam.x, cam.y, cam.z); //update camera pos every render
                     job.mesh.render(gl); //custom render function in mesh.js
                 }
 

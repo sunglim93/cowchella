@@ -11,9 +11,10 @@ class Mesh {
      * @param {number[]} vertices
      * @param {number[]} indices
     */
-    constructor( gl, program, vertices, indices ) {
+    constructor( gl, program, vertices, indices, material) {
         this.verts = create_and_load_vertex_buffer( gl, vertices, gl.STATIC_DRAW );
         this.indis = create_and_load_elements_buffer( gl, indices, gl.STATIC_DRAW );
+        this.material = material;
 
         this.n_verts = vertices.length;
         this.n_indis = indices.length;
@@ -28,7 +29,7 @@ class Mesh {
      * @param {number} depth 
      */
 
-    static box( gl, program, width, height, depth ) {
+    static box( gl, program, width, height, depth, material) {
         let hwidth = width / 2.0;
         let hheight = height / 2.0;
         let hdepth = depth / 2.0;
@@ -101,7 +102,7 @@ class Mesh {
         ];
         gl.bindTexture(gl.TEXTURE_2D, material.texture);
 
-        return new Mesh( gl, program, verts, indis );
+        return new Mesh( gl, program, verts, indis, material);
     }
 
     static make_uv_sphere(gl, program, subdivs, material){
@@ -149,7 +150,7 @@ class Mesh {
             }
         }
         gl.bindTexture(gl.TEXTURE_2D, material.texture);
-        return new Mesh(gl, program, verts, indis);
+        return new Mesh(gl, program, verts, indis, material);
     }
 
    /**
@@ -161,10 +162,12 @@ class Mesh {
         gl.cullFace( gl.BACK );
         gl.enable( gl.CULL_FACE );
         
-        set_uniform_scalar(gl, this.program, 'mat_ambient', material.ambient);
-        set_uniform_scalar(gl, this.program, 'mat_diffuse', material.diffuse);
-        set_uniform_scalar(gl, this.program, 'mat_specular', material.specular);
-        set_uniform_scalar(gl, this.program, 'mat_shininess', material.shininess);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, this.material.texture);
+        set_uniform_scalar(gl, this.program, 'mat_ambient', this.material.ambient);
+        set_uniform_scalar(gl, this.program, 'mat_diffuse', this.material.diffuse);
+        set_uniform_scalar(gl, this.program, 'mat_specular', this.material.specular);
+        set_uniform_scalar(gl, this.program, 'mat_shininess', this.material.shininess);
         
         gl.useProgram( this.program );
         gl.bindBuffer( gl.ARRAY_BUFFER, this.verts );
@@ -244,11 +247,12 @@ class Mesh {
      * @param {WebGLProgram} program
      * @param {string} text
      */
-    static from_obj_text( gl, program, text ) {
+    static from_obj_text( gl, program, text, texture_url) {
         let lines = text.split( /\r?\n/ );
 
         let verts = [];
         let indis = [];
+        let uv = [];
         
 
         for( let line of lines ) {
@@ -261,7 +265,14 @@ class Mesh {
             { 
                 continue; 
             }
-            else if( parts[0] == 'v' ) {
+            else if(parts[0] == 'vt') {
+                console.log("uv coord" + parts[2] + parts[4]);
+                //verts.push(parseFloat(parts[1]))
+            }
+            else if(parts[0]=='vn') {
+                // vertex normal!
+            }
+            else if( parts[0] == 'v') {
                 
                 verts.push( parseFloat( parts[2] ) );
                 verts.push( parseFloat( parts[4] ) );
