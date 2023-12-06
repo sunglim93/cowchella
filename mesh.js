@@ -240,7 +240,6 @@ class Mesh {
         gl.drawElements( gl.TRIANGLES, this.n_indis, gl.UNSIGNED_SHORT, 0 );
     }
     */
-
     /**
      * Parse the given text as the body of an obj file.
      * @param {WebGLRenderingContext} gl
@@ -264,14 +263,15 @@ class Mesh {
         let uv = [];
         let norms = [];
         let indis = [];
-        
+        let i = 0
         for( let line of lines ) {
             let trimmed = line.trim();
             let parts = trimmed.split( /(\s+)/ );
+            i++;
 
             if( 
-                parts === null || parts.length < 2 || 
-                parts[0] == '#' || parts[0] === '' ) 
+                parts === null || parts.length < 2 || parts[0] == 'mtllib' ||
+                parts[0] == '#' || parts[0] === '' || parts[0] == 'g' || parts[0] =='s' || parts[0] == 'usemtl' || parts[0]=='o') 
             { 
                 continue; 
             }
@@ -304,7 +304,7 @@ class Mesh {
             }
             else {
                 console.log( parts) ;
-                throw new Error( 'unsupported obj command: ', parts[0], parts );
+                throw new Error( 'unsupported obj command: ', parts[0], parts, i);
             }
         }
         let vCount = 0;
@@ -313,13 +313,16 @@ class Mesh {
         console.log(vertices.length/7);
         for (let i = 0; i < (vertices.length/7); i ++) {
             for (let j = 0; j < 7; j++){
-                verts.push(vertices[vCount++]);
+                verts.push(vertices[vCount]);
+                vCount++;
             }
             for (let j = 0; j < 2; j++){
-                verts.push(uv[uCount++]);
+                verts.push(uv[uCount]);
+                uCount++;
             }
             for (let j = 0; j < 3; j ++){
-                verts.push(norms[normCount++]);
+                verts.push(norms[normCount]);
+                normCount++;
             }
         }
         
@@ -341,27 +344,6 @@ class Mesh {
             console.log(loaded_mesh);
             f(loaded_mesh);
         }
-        
-        // the function that will be called when the file is being loaded
-        /*
-        request.onreadystatechange = function() {
-            // console.log( request.readyState );
-
-            if( request.readyState != 4 ) { return; }
-            if( request.status != 200 ) { 
-                throw new Error( 'HTTP error when opening .obj file: ', request.statusText ); 
-            }
-
-            // now we know the file exists and is ready
-            cow_mesh = Mesh.from_obj_text( gl, program, request.responseText, texture_url);
-            //console.log(loaded_mesh);
-
-            console.log( 'loaded ', file_name );
-            //f(loaded_mesh);
-        };
-        */
-
-        
         request.open( 'GET', file_name ); // initialize request. 
         request.send();                   // execute request
     }

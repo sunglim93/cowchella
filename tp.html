@@ -31,35 +31,10 @@
         <script src = "render_mesh.js"></script>
         <script>
             let cow_mesh;
+            let note_mesh;
             let canvas = document.getElementById( 'the-canvas' );
             /** @type {WebGLRenderingContext} */
             let gl = canvas.getContext( 'webgl2' );
-            /*
-            const metal_img = new Image();
-            const metal_texture = gl.createTexture();
-            metal_img.onload = () => {
-                gl.activateTexture(gl.TEXTURE0+1);
-                gl.bindTexture(gl.TEXTURE_2D, metal_texture);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, metal_img);
-                gl.generateMipmap(gl.TEXTURE_2D);
-                gl.active
-            }
-            metal_img.src = "metal_scale.png";
-            */
-            
-            //create texture
-            /*
-            let texture = gl.createTexture();
-            let image = new Image();
-            image.src = '2k_mercury.jpg';
-            image.onload = on_load;
-            function on_load(){
-                //gl.bindTexture(gl.TEXTURE_2D, texture);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-                gl.generateMipmap(gl.TEXTURE_2D);
-                let loc = gl.getAttribLocation()
-            };
-            */
             function generate_render_jobs(parent_matrix, node, jobs){ //generate render jobs from slides
                 let matrix = parent_matrix.mul(node.get_matrix());
                 if (node.data != null) { //slides have this as this.data
@@ -197,20 +172,7 @@
                 gl.generateMipmap(gl.TEXTURE_2D);
             };
             set_render_params( gl );
-            let cow_texture = gl.createTexture();
-            let cow_image = new Image();
-            cow_image.src = 'minecraft_dirt.png';
-            cow_image.onload = on_load_cow;
-            function on_load_cow(){
-                gl.bindTexture(gl.TEXTURE_2D, dirt_texture);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, cow_image);
-                gl.generateMipmap(gl.TEXTURE_2D);
-            };
             set_render_params( gl );
-            let cow_material = new Material(1,1,1,1, cow_texture);
-            //var cow_mesh = Mesh.empty_mesh(gl);
-            //console.log(cow_mesh);
-            let test=10;
             Mesh.from_obj_file(gl, "cow.obj", shader_program, "CowImage.png", function (loaded_mesh){
                 cow_mesh = loaded_mesh;
                 build_and_run_scene();
@@ -244,18 +206,29 @@
                 const metal_material = new Material(0.25, 1.0, 2.0, 4, metal_texture);
                 const dirt_material = new Material(0.25, 1.0, 1.0, 1, dirt_texture);
                 let rootSphere = Mesh.make_uv_sphere( gl, shader_program, 20, metal_material);
+                let stage = Mesh.box(gl, shader_program, 4, 0.5, 1, metal_material);
                 let projection = Mat4.perspective_fovx( 0.25, 4 / 3, 0.25, 64 );
 
                 let rootNode = new Node();
-                let childNode = rootNode.add_child();
-                childNode.data = cow_mesh;
-                childNode.position = new Vec4(0,0,0,1);
-                childNode.scale = new Vec4(0.1,0.1,0.1,1);
+                let stageNode = rootNode.add_child();
+                stageNode.data = stage;
+                let cowNode = rootNode.add_child();
+                cowNode.data = cow_mesh;
+                cowNode.position = new Vec4(0,0.70,-0.5,1);
+                cowNode.scale = new Vec4(0.1,0.1,0.1,1);
+                cowNode.yaw = 0.25;
+                cowNode.roll = -0.1;
 
-                let secondSphere = Mesh.box(gl, shader_program, 1,1,1, dirt_material);
-                let secondChildNode = childNode.add_child();
-                secondChildNode.data = secondSphere;
-                secondChildNode.position = new Vec4(-5,0,0,1);
+                let crowdNode = rootNode.add_child();
+                crowdNode.position = new Vec4(-3,0,-3);
+                for(let i = 0; i < 10; i++){
+                    let p = crowdNode.add_child();
+                    p.position = new Vec4(i/2,0,0,1);
+                    p.data = cow_mesh;
+                    p.scale = new Vec4(0.1,0.1,0.1,1);
+                    p.yaw = -0.25;
+                }
+
 
 
                 function render( now ) {
