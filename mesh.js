@@ -46,42 +46,39 @@ class Mesh {
         let seven = new Vec4(-hwidth, hheight, hdepth, 0.0).norm();
         let eight = new Vec4(hwidth, hheight, hdepth, 0.0).norm();
 
-        let u_repeat = 2;
-        let v_repeat = 2;
-
         let verts = [
             //x, y, z, r, g, b, a, u, v, normals
-            hwidth, -hheight, -hdepth, 1.0, 0.0, 0.0, 1.0,    0.25 * u_repeat, 0.5 * v_repeat, one.x, one.y, one.z,//0
-            hwidth, -hheight, -hdepth, 1.0, 0.0, 0.0, 1.0,    0.25* u_repeat, 0.5* v_repeat, one.x, one.y, one.z,//1
-            hwidth, -hheight, -hdepth, 1.0, 0.0, 0.0, 1.0,    0.5* u_repeat, 0.75* v_repeat, one.x,one.y,one.z, //2
+            hwidth, -hheight, -hdepth, 1.0, 0.0, 0.0, 1.0,    0.25  , 0.5  , one.x, one.y, one.z,//0
+            hwidth, -hheight, -hdepth, 1.0, 0.0, 0.0, 1.0,    0.25 , 0.5 , one.x, one.y, one.z,//1
+            hwidth, -hheight, -hdepth, 1.0, 0.0, 0.0, 1.0,    0.5 , 0.75 , one.x,one.y,one.z, //2
 
-            -hwidth, -hheight, -hdepth, 0.0, 1.0, 0.0, 1.0,   0* u_repeat, 0.5* v_repeat, two.x,two.y,two.z,//3
-            -hwidth, -hheight, -hdepth, 0.0, 1.0, 0.0, 1.0,   1* u_repeat, 0.5* v_repeat, two.x, two.y, two.z,//4
-            -hwidth, -hheight, -hdepth, 0.0, 1.0, 0.0, 1.0,   0.75* u_repeat, 0.75* v_repeat, two.x,two.y,two.z,//5
+            -hwidth, -hheight, -hdepth, 0.0, 1.0, 0.0, 1.0,   0 , 0.5 , two.x,two.y,two.z,//3
+            -hwidth, -hheight, -hdepth, 0.0, 1.0, 0.0, 1.0,   1 , 0.5 , two.x, two.y, two.z,//4
+            -hwidth, -hheight, -hdepth, 0.0, 1.0, 0.0, 1.0,   0.75 , 0.75 , two.x,two.y,two.z,//5
 
-            -hwidth, hheight, -hdepth, 0.0, 0.0, 1.0, 1.0,   0* u_repeat, 0.25* v_repeat, three.x, three.y, three.z,//6 
-            -hwidth, hheight, -hdepth, 0.0, 0.0, 1.0, 1.0,   0.75* u_repeat, 0* v_repeat,three.x, three.y, three.z,//7
-            -hwidth, hheight, -hdepth, 0.0, 0.0, 1.0, 1.0,   1* u_repeat, 0.25* v_repeat,three.x, three.y, three.z,//8
+            -hwidth, hheight, -hdepth, 0.0, 0.0, 1.0, 1.0,   0 , 0.25 , three.x, three.y, three.z,//6 
+            -hwidth, hheight, -hdepth, 0.0, 0.0, 1.0, 1.0,   0.75 , 0 ,three.x, three.y, three.z,//7
+            -hwidth, hheight, -hdepth, 0.0, 0.0, 1.0, 1.0,   1 , 0.25 ,three.x, three.y, three.z,//8
 
-            hwidth, hheight, -hdepth, 1.0, 1.0, 0.0, 1.0,    0.25* u_repeat, 0.25* v_repeat, four.x, four.y, four.z,//9
-            hwidth, hheight, -hdepth, 1.0, 1.0, 0.0, 1.0,    0.25* u_repeat, 0.25* v_repeat,four.x, four.y, four.z,//10
-            hwidth, hheight, -hdepth, 1.0, 1.0, 0.0, 1.0,    0.5* u_repeat, 0* v_repeat, four.x, four.y, four.z,//11  
+            hwidth, hheight, -hdepth, 1.0, 1.0, 0.0, 1.0,    0.25 , 0.25 , four.x, four.y, four.z,//9
+            hwidth, hheight, -hdepth, 1.0, 1.0, 0.0, 1.0,    0.25 , 0.25 ,four.x, four.y, four.z,//10
+            hwidth, hheight, -hdepth, 1.0, 1.0, 0.0, 1.0,    0.5 , 0 , four.x, four.y, four.z,//11  
 
-            hwidth, -hheight, hdepth, 1.0, 0.0, 1.0, 1.0,    0.5* u_repeat, 0.5* v_repeat, five.x, five.y, five.z,//12
-            hwidth, -hheight, hdepth, 1.0, 0.0, 1.0, 1.0,    0.5* u_repeat, 0.5* v_repeat, five.x, five.y, five.z,//13
-            hwidth, -hheight, hdepth, 1.0, 0.0, 1.0, 1.0,    0.5* u_repeat, 0.5* v_repeat,five.x, five.y, five.z,//14
+            hwidth, -hheight, hdepth, 1.0, 0.0, 1.0, 1.0,    0.5 , 0.5 , five.x, five.y, five.z,//12
+            hwidth, -hheight, hdepth, 1.0, 0.0, 1.0, 1.0,    0.5 , 0.5 , five.x, five.y, five.z,//13
+            hwidth, -hheight, hdepth, 1.0, 0.0, 1.0, 1.0,    0.5 , 0.5 ,five.x, five.y, five.z,//14
 
-            -hwidth, -hheight, hdepth, 0.0, 1.0, 1.0, 1.0,   0.75* u_repeat, 0.5* v_repeat, six.x, six.y, six.z, //15
-            -hwidth, -hheight, hdepth, 0.0, 1.0, 1.0, 1.0,   0.75* u_repeat, 0.5* v_repeat,six.x, six.y, six.z, //16
-            -hwidth, -hheight, hdepth, 0.0, 1.0, 1.0, 1.0,   0.75* u_repeat, 0.5* v_repeat,six.x, six.y, six.z, //17
+            -hwidth, -hheight, hdepth, 0.0, 1.0, 1.0, 1.0,   0.75 , 0.5 , six.x, six.y, six.z, //15
+            -hwidth, -hheight, hdepth, 0.0, 1.0, 1.0, 1.0,   0.75 , 0.5 ,six.x, six.y, six.z, //16
+            -hwidth, -hheight, hdepth, 0.0, 1.0, 1.0, 1.0,   0.75 , 0.5 ,six.x, six.y, six.z, //17
 
-            -hwidth, hheight, hdepth, 0.5, 0.5, 1.0, 1.0,    0.75* u_repeat, 0.25* v_repeat,seven.x, seven.y, seven.z,//18
-            -hwidth, hheight, hdepth, 0.5, 0.5, 1.0, 1.0,    0.75* u_repeat, 0.25* v_repeat,seven.x, seven.y, seven.z,//19
-            -hwidth, hheight, hdepth, 0.5, 0.5, 1.0, 1.0,    0.75* u_repeat, 0.25* v_repeat,seven.x, seven.y, seven.z, //20
+            -hwidth, hheight, hdepth, 0.5, 0.5, 1.0, 1.0,    0.75 , 0.25 ,seven.x, seven.y, seven.z,//18
+            -hwidth, hheight, hdepth, 0.5, 0.5, 1.0, 1.0,    0.75 , 0.25 ,seven.x, seven.y, seven.z,//19
+            -hwidth, hheight, hdepth, 0.5, 0.5, 1.0, 1.0,    0.75 , 0.25 ,seven.x, seven.y, seven.z, //20
 
-            hwidth, hheight, hdepth, 1.0, 1.0, 0.5, 1.0,     0.5* u_repeat, 0.25* v_repeat,eight.x, eight.y, eight.z,//21
-            hwidth, hheight, hdepth, 1.0, 1.0, 0.5, 1.0,     0.5* u_repeat, 0.25* v_repeat, eight.x, eight.y, eight.z,//22
-            hwidth, hheight, hdepth, 1.0, 1.0, 0.5, 1.0,     0.5* u_repeat, 0.25* v_repeat, eight.x, eight.y, eight.z,//23
+            hwidth, hheight, hdepth, 1.0, 1.0, 0.5, 1.0,     0.5 , 0.25 ,eight.x, eight.y, eight.z,//21
+            hwidth, hheight, hdepth, 1.0, 1.0, 0.5, 1.0,     0.5 , 0.25 , eight.x, eight.y, eight.z,//22
+            hwidth, hheight, hdepth, 1.0, 1.0, 0.5, 1.0,     0.5 , 0.25 , eight.x, eight.y, eight.z,//23
         ];
 
         let indis = [

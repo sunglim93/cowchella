@@ -305,6 +305,18 @@
                 cowNode.scale = new Vec4(0.1,0.1,0.1,1);
                 cowNode.yaw = 0.25;
                 cowNode.roll = -0.1;
+
+                const jump_amplitude = 0.3; // Adjust the amplitude of the jump
+                const jump_frequency = 1.0; // Adjust the frequency of the jump
+                let jump_time = 0;
+
+                const pitch_amplitude = 0.1; // Adjust the amplitude of the pitch
+                const pitch_frequency = 1.0; // Adjust the frequency of the pitch
+                let pitch_time = 0;
+
+                is_jumping = true;
+
+
                 let light_anchor_node = rootNode.add_child();
                 light_anchor_node.position = new Vec4(0,1,0,1);
 
@@ -318,7 +330,7 @@
                     p.yaw = -0.25;
                 }
 
-
+                
 
                 function render( now ) {
                     let dt = (now - last_update) / 1000;
@@ -359,6 +371,30 @@
                 function update() {
                     let keys_down = keys.keys_down_list();
                     const camera_pos = {x: cam.x, y:cam.y, z:cam.z}; //update camera_pos
+
+                    if (is_jumping){
+                        //cow jumping animation
+                        const jump_speed = 0.25;
+                        jump_time += jump_speed;
+                        const jump_offset = jump_amplitude * Math.sin(jump_frequency * jump_time);
+                        cowNode.position.y = Math.max(0.70, 0.70 + jump_offset);
+
+                        if (jump_time >= 2 * Math.PI / jump_frequency){
+                            is_jumping = false;
+                            jump_time = 0;
+                        }
+                    }else{
+                        const pitch_speed = 0.1; // Adjust the speed of the pitch
+                        pitch_time += pitch_speed;
+                        const pitch_offset = pitch_amplitude * Math.sin(pitch_frequency * pitch_time);
+
+                        // Update the pitch angle of cowNode
+                        cowNode.pitch = pitch_offset;
+                        if (pitch_time >= 2 * Math.PI / pitch_frequency){
+                            is_jumping = true;
+                            pitch_time = 0;
+                        }
+                    }
 
                     for( const key of keys_down ) {
                     let bound_function = KEYMAP[ key ];
