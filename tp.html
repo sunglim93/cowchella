@@ -193,7 +193,7 @@
 
                 let keys = Keys.start_listening();
                 let cam = new Camera();
-                cam.translate( 0, 0, -1.5);
+                cam.translate( 0, 1, -4.5);
                 const camera_pos = {x: cam.x, y:cam.y, z: cam.z};
 
                 set_uniform_vec3(gl, shader_program, 'sun_dir', 1.0, 0.0, 0.0);
@@ -205,13 +205,21 @@
                 //trying to create a second sphere that is the child of the first sphere here
                 const metal_material = new Material(0.25, 1.0, 2.0, 4, metal_texture);
                 const dirt_material = new Material(0.25, 1.0, 1.0, 1, dirt_texture);
-                let rootSphere = Mesh.make_uv_sphere( gl, shader_program, 20, metal_material);
+                let discoball = Mesh.make_uv_sphere( gl, shader_program, 20, metal_material);
                 let stage = Mesh.box(gl, shader_program, 4, 0.5, 1, metal_material);
                 let projection = Mat4.perspective_fovx( 0.25, 4 / 3, 0.25, 64 );
 
                 let rootNode = new Node();
                 let stageNode = rootNode.add_child();
                 stageNode.data = stage;
+                let ballone = stageNode.add_child();
+                ballone.data = discoball;
+                ballone.scale = new Vec4(0.5, 0.5, 0.5, 1);
+                ballone.position = new Vec4(-2,2,0,1);
+                let balltwo = stageNode.add_child();
+                balltwo.scale = new Vec4(0.5, 0.5, 0.5, 1);
+                balltwo.position = new Vec4(2,2,0,1);
+                balltwo.data = discoball;
                 let cowNode = rootNode.add_child();
                 cowNode.data = cow_mesh;
                 cowNode.position = new Vec4(0,0.70,-0.5,1);
