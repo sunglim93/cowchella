@@ -71,6 +71,30 @@
                 }
             }
 
+            let initial_time = performance.now();
+
+            function update_light_pos(shader_program){
+                const radius = 1.0;
+                const speed = 0.002;
+                const elapsed_time = (performance.now() - initial_time);
+                const angle1 = elapsed_time * speed;
+                const angle2 = elapsed_time * speed * 1.5;
+                const angle3 = elapsed_time * speed * 2.0;
+
+                const x1 = radius * Math.cos(angle1);
+                const z1 = radius * Math.sin(angle2);
+
+                const x2 = radius * Math.cos(angle2);
+                const z2 = radius * Math.sin(angle2);
+
+                const x3 = radius * Math.cos(angle3);
+                const z3 = radius * Math.cos(angle3);
+
+                set_uniform_vec3(gl, shader_program, 'light1', x1, 1.0, z1);
+                set_uniform_vec3(gl, shader_program, 'light2', x2, 1.0, z2);
+                set_uniform_vec3(gl, shader_program, 'light3', x3, 1.0, z3);
+            }
+
             let vertex_source = 
             `   #version 300 es
                 precision mediump float;
@@ -236,11 +260,11 @@
                 cam.translate( 0, 1, -4.5);
                 const camera_pos = {x: cam.x, y:cam.y, z: cam.z};
 
-                set_uniform_vec3(gl, shader_program, 'light1', 0.0, 1.0, 0.0);
+                set_uniform_vec3(gl, shader_program, 'light1', 0.0, 1.0, 1.0);
                 set_uniform_vec3(gl, shader_program, 'light1_color', 0.0, 1.0, 0.0);
-                set_uniform_vec3(gl, shader_program, 'light2', -1.0, 1.0, 0.0);
+                set_uniform_vec3(gl, shader_program, 'light2', -1.0, 1.0, -1.0);
                 set_uniform_vec3(gl, shader_program, 'light2_color', 1.0, 0.0, 0.0);
-                set_uniform_vec3(gl, shader_program, 'light3', 1.0, 1.0, 0.0);
+                set_uniform_vec3(gl, shader_program, 'light3', 1.0, 1.0, -1.0);
                 set_uniform_vec3(gl, shader_program, 'light3_color', 0.0, 0.0, 1.0);
 
 
@@ -268,6 +292,8 @@
                 cowNode.scale = new Vec4(0.1,0.1,0.1,1);
                 cowNode.yaw = 0.25;
                 cowNode.roll = -0.1;
+                let light_anchor_node = rootNode.add_child();
+                light_anchor_node.position = new Vec4(0,1,0,1);
 
                 let crowdNode = rootNode.add_child();
                 crowdNode.position = new Vec4(-3,0,-3);
@@ -287,7 +313,8 @@
                     let jobs = []; //render jobs
                     set_uniform_vec3(gl, shader_program, 'camera_pos', cam.x, cam.y, cam.z); //update camera pos every render
                     set_uniform_matrix4(gl, shader_program, 'view', projection.data); //view matrix
-                    update_light_colors(shader_program);
+                    // update_light_colors(shader_program);
+                    update_light_pos(shader_program);                    
                     generate_render_jobs(new Mat4(), rootNode, jobs);
                     for (let job of jobs){
                         let model = job.matrix;
