@@ -226,6 +226,17 @@
                 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, metal_image);
                 gl.generateMipmap(gl.TEXTURE_2D);
             };
+
+            let disco_tex = gl.createTexture();
+            let disco_image = new Image();
+            disco_image.src = 'disco.jpg';
+            disco_image.onload = on_load_disco;
+            function on_load_disco(){
+                gl.bindTexture(gl.TEXTURE_2D, disco_tex);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, disco_image);
+                gl.generateMipmap(gl.TEXTURE_2D);
+            };
+
             let dirt_texture = gl.createTexture();
             let dirt_image = new Image();
             dirt_image.src = 'minecraft_dirt.png';
@@ -271,7 +282,9 @@
                 //trying to create a second sphere that is the child of the first sphere here
                 const metal_material = new Material(0.25, 1.0, 2.0, 4, metal_texture);
                 const dirt_material = new Material(0.25, 1.0, 1.0, 1, dirt_texture);
-                let discoball = Mesh.make_uv_sphere( gl, shader_program, 20, metal_material);
+                const disco_material = new Material(0.25, 1.0, 2.0, 4, disco_tex);
+
+                let discoball = Mesh.make_uv_sphere( gl, shader_program, 20, disco_material);
                 let stage = Mesh.box(gl, shader_program, 4, 0.5, 1, metal_material);
                 let projection = Mat4.perspective_fovx( 0.25, 4 / 3, 0.25, 64 );
 
