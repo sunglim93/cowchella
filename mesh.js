@@ -37,14 +37,17 @@ class Mesh {
             //let normals = new Vec4(x, y, z, 0.0).norm();
             //verts.push(normals.x, normals.y, normals.z);
 
-        let one = new Vec4(hwidth, -hheight, -hdepth, 0.0).norm;
-        let two = new Vec4(-hwidth, -hheight, -hdepth, 0.0).norm;
-        let three = new Vec4(-hwidth, hheight, -hdepth, 0.0).norm;
-        let four = new Vec4(hwidth, hheight, -hdepth, 0.0).norm;
-        let five = new Vec4(hwidth, -hheight, hdepth, 0.0).norm;
-        let six = new Vec4(-hwidth, -hheight, hdepth, 0.0).norm;
-        let seven = new Vec4(-hwidth, hheight, hdepth, 0.0).norm;
-        let eight = new Vec4(hwidth, hheight, hdepth, 0.0).norm;
+        let one = new Vec4(hwidth, -hheight, -hdepth, 0.0).norm();
+        let two = new Vec4(-hwidth, -hheight, -hdepth, 0.0).norm();
+        let three = new Vec4(-hwidth, hheight, -hdepth, 0.0).norm();
+        let four = new Vec4(hwidth, hheight, -hdepth, 0.0).norm();
+        let five = new Vec4(hwidth, -hheight, hdepth, 0.0).norm();
+        let six = new Vec4(-hwidth, -hheight, hdepth, 0.0).norm();
+        let seven = new Vec4(-hwidth, hheight, hdepth, 0.0).norm();
+        let eight = new Vec4(hwidth, hheight, hdepth, 0.0).norm();
+
+        // let u_repeat = 3;
+        // let v_repeat = 3;
 
         let verts = [
             //x, y, z, r, g, b, a, u, v, normals
@@ -160,7 +163,7 @@ class Mesh {
      */
    render( gl ) {
         gl.cullFace( gl.BACK );
-        gl.enable( gl.CULL_FACE );
+        // gl.enable( gl.CULL_FACE );
         gl.frontFace(gl.CW);
         
         gl.activeTexture(gl.TEXTURE0);
