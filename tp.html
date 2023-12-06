@@ -310,12 +310,15 @@
                 const jump_frequency = 1.0; // Adjust the frequency of the jump
                 let jump_time = 0;
 
+                const crowd_jump_amplitude = 0.1; // Adjust the amplitude of the jump
+                const crowd_jump_frequency = 0.5; // Adjust the frequency of the jump
+                let crowd_jump_time = 0;
+
                 const pitch_amplitude = 0.1; // Adjust the amplitude of the pitch
                 const pitch_frequency = 1.0; // Adjust the frequency of the pitch
                 let pitch_time = 0;
 
                 is_jumping = true;
-
 
                 let light_anchor_node = rootNode.add_child();
                 light_anchor_node.position = new Vec4(0,1,0,1);
@@ -328,6 +331,12 @@
                     p.data = cow_mesh;
                     p.scale = new Vec4(0.1,0.1,0.1,1);
                     p.yaw = -0.25;
+                }
+
+                function getRandomCow(crowdNode){
+                    min = 0;
+                    max = crowdNode.children.length -1;
+                    return crowdNode.children[Math.floor(Math.random() * (max - min +1)) + min];
                 }
 
                 
@@ -395,6 +404,13 @@
                             pitch_time = 0;
                         }
                     }
+
+                    let child = getRandomCow(crowdNode);
+                    const crowd_jump_speed = 0.5;
+                    crowd_jump_time += crowd_jump_speed;
+                    const crowd_jump_offset = crowd_jump_amplitude * Math.sin(crowd_jump_frequency * crowd_jump_time);
+                    child.position.y = Math.max(0.0, 0.0+crowd_jump_offset);
+
 
                     for( const key of keys_down ) {
                     let bound_function = KEYMAP[ key ];
