@@ -45,6 +45,31 @@
                 }
             }
 
+            const light_colors = [
+                [1.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0],
+                [0.0, 0.0, 1.0]
+            ];
+
+            let light1_index = 0;
+            let light2_index = 1;
+            let light3_index = 2;
+
+            let frame_counter = 0;
+            const frame_interval = 60;
+
+            function update_light_colors(shader_program){
+                frame_counter++;
+                if (frame_counter >= frame_interval){
+                    set_uniform_vec3(gl, shader_program, 'light1_color', ...light_colors[light1_index % light_colors.length]);
+                    set_uniform_vec3(gl, shader_program, 'light2_color', ...light_colors[light2_index % light_colors.length]);
+                    set_uniform_vec3(gl, shader_program, 'light3_color', ...light_colors[light3_index % light_colors.length]);
+                    light1_index += 1;
+                    light2_index += 1;
+                    light3_index += 1;
+                    frame_counter = 0;
+                }
+            }
 
             let vertex_source = 
             `   #version 300 es
@@ -67,10 +92,12 @@
                 uniform float mat_specular;
                 uniform float mat_shininess;
 
-                uniform vec3 sun_dir; //direction TO the sun
-                uniform vec3 sun_color;
-                uniform vec3 red_pos;
-                uniform vec3 red_color;
+                uniform vec3 light1; //direction TO the sun
+                uniform vec3 light1_color;
+                uniform vec3 light2;
+                uniform vec3 light2_color;
+                uniform vec3 light3;
+                uniform vec3 light3_color;
                 uniform vec3 camera_pos;
 
                 vec3 diff_color(
@@ -94,42 +121,54 @@
                     vec3 coords_tx = (model * vec4(coordinates, 1.0)).xyz;
 
                     //normalized sun_dir
-                    vec3 norm_sun_dir = normalize(sun_dir);
+                    vec3 norm_light1 = normalize(light1);
+                    vec3 norm_light2 = normalize(light2);
+                    vec3 norm_light3 = normalize(light3);
                     
                     //direction to point light
-                    vec3 to_pt_light = normalize(red_pos - coords_tx);
-                    float distance = length(to_pt_light);
+                    // vec3 to_pt_light = normalize(red_pos - coords_tx);
+                    // float distance = length(to_pt_light);
 
                     //attenuation of point light
-                    float attenuation = 1.0 / (distance * distance);
+                    // float attenuation = 1.0 / (distance * distance);
 
                     //set ambient color
                     vec4 ambient_color = vec4(mat_ambient, mat_ambient, mat_ambient, 1.0);
 
-                    //diffuse (sun)
-                    vec3 diffuse = diff_color(normal_tx, norm_sun_dir, sun_color, mat_diffuse);
-                    //diffuse (red)
-                    vec3 red_diffuse = diff_color(normal_tx, to_pt_light, red_color, mat_diffuse) * attenuation;
+                    //diffuse (light1)
+                    vec3 diffuse1 = diff_color(normal_tx, norm_light1, light1_color, mat_diffuse);
+                    //diffuse (light2)
+                    vec3 diffuse2 = diff_color(normal_tx, norm_light2, light2_color, mat_diffuse);
+                    //diffuse (light3)
+                    vec3 diffuse3 = diff_color(normal_tx, norm_light3, light3_color, mat_diffuse);
                     
-                    //specular
-                    vec3 specular = vec3(0.0);
-                    float cos_light_surf_normal = dot(normal_tx, norm_sun_dir);
-                    if (cos_light_surf_normal >= 0.0){
-                        vec3 R = 2.0 * dot(normal_tx, norm_sun_dir) * normal_tx - norm_sun_dir;
+                    //specular1
+                    vec3 specular1 = vec3(0.0);
+                    float cos_light_surf_normal1 = dot(normal_tx, norm_light1);
+                    if (cos_light_surf_normal1 >= 0.0){
+                        vec3 R = 2.0 * dot(normal_tx, norm_light1) * normal_tx - norm_light1;
                         vec3 V = normalize(camera_pos - coords_tx);
-                        specular = mat_specular * pow(max(dot(R, V), 0.0), mat_shininess) * sun_color;
+                        specular1 = mat_specular * pow(max(dot(R, V), 0.0), mat_shininess) * light1_color;
                     }
-                    //specular (red)
-                    vec3 red_specular = vec3(0.0);
-                    float cos_red_surf_normal = dot(normal_tx, to_pt_light);
-                    if (cos_red_surf_normal >= 0.0){
-                        vec3 red_R = 2.0 * dot(normal_tx, to_pt_light) * normal_tx - to_pt_light;
+                    //specular2
+                    vec3 specular2 = vec3(0.0);
+                    float cos_surf_normal2 = dot(normal_tx, norm_light2);
+                    if (cos_surf_normal2 >= 0.0){
+                        vec3 R = 2.0 * dot(normal_tx, norm_light2) * normal_tx - norm_light2;
                         vec3 V = normalize(camera_pos - coords_tx);
-                        red_specular = mat_specular * pow(max(dot(red_R, V), 0.0), mat_shininess) * red_color * attenuation;
+                        specular2 = mat_specular * pow(max(dot(R, V), 0.0), mat_shininess) * light2_color;
+                    }
+                    //specular3
+                    vec3 specular3 = vec3(0.0);
+                    float cos_light_surf_normal3 = dot(normal_tx, norm_light3);
+                    if (cos_light_surf_normal3 >= 0.0){
+                        vec3 R = 2.0 * dot(normal_tx, norm_light3) * normal_tx - norm_light3;
+                        vec3 V = normalize(camera_pos - coords_tx);
+                        specular3 = mat_specular * pow(max(dot(R, V), 0.0), mat_shininess) * light3_color;
                     }
                     
                     //combine lighting components to get final ambient color
-                    v_color = ambient_color + vec4(diffuse, 1.0) +  vec4(specular, 1.0) + vec4(red_diffuse, 1.0) + vec4(red_specular, 1.0);
+                    v_color = ambient_color + vec4(diffuse1, 1.0) +  vec4(specular1, 1.0) + vec4(diffuse2, 1.0) + vec4(specular2, 1.0) + vec4(diffuse3, 1.0) + vec4(specular3, 1.0);
                 }
             `;
             
@@ -153,6 +192,7 @@
             let shader_program = 
                 create_compile_and_link_program( gl, vertex_source, fragment_source );
             gl.useProgram( shader_program );
+
             let metal_texture = gl.createTexture();
             let metal_image = new Image();
             metal_image.src = 'metal_scale.png';
@@ -196,10 +236,12 @@
                 cam.translate( 0, 1, -4.5);
                 const camera_pos = {x: cam.x, y:cam.y, z: cam.z};
 
-                set_uniform_vec3(gl, shader_program, 'sun_dir', 1.0, 0.0, 0.0);
-                set_uniform_vec3(gl, shader_program, 'sun_color', 1.0, 1.0, 1.0);
-                set_uniform_vec3(gl, shader_program, 'red_pos', -1.0, -1.0, 0.0);
-                set_uniform_vec3(gl, shader_program, 'red_color', 1.0, 0.0, 0.0);
+                set_uniform_vec3(gl, shader_program, 'light1', 0.0, 1.0, 0.0);
+                set_uniform_vec3(gl, shader_program, 'light1_color', 0.0, 1.0, 0.0);
+                set_uniform_vec3(gl, shader_program, 'light2', -1.0, 1.0, 0.0);
+                set_uniform_vec3(gl, shader_program, 'light2_color', 1.0, 0.0, 0.0);
+                set_uniform_vec3(gl, shader_program, 'light3', 1.0, 1.0, 0.0);
+                set_uniform_vec3(gl, shader_program, 'light3_color', 0.0, 0.0, 1.0);
 
 
                 //trying to create a second sphere that is the child of the first sphere here
@@ -241,11 +283,11 @@
 
                 function render( now ) {
                     let dt = (now - last_update) / 1000;
-
                     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
                     let jobs = []; //render jobs
                     set_uniform_vec3(gl, shader_program, 'camera_pos', cam.x, cam.y, cam.z); //update camera pos every render
                     set_uniform_matrix4(gl, shader_program, 'view', projection.data); //view matrix
+                    update_light_colors(shader_program);
                     generate_render_jobs(new Mat4(), rootNode, jobs);
                     for (let job of jobs){
                         let model = job.matrix;

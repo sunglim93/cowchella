@@ -294,7 +294,7 @@ class Mesh {
                 vertices.push( 1.0, 1.0, 1.0, 1.0 );
             }
             else if( parts[0] == 'f' ) {
-                console.log(line);
+                // console.log(line);
                 let indices = [];
                 for (let i = 1; i < parts.length; i++) {
                     let number = parseFloat(parts[i].split('/')[0])-1;
@@ -302,7 +302,7 @@ class Mesh {
                         indices.push(number);
                     }
                 }
-                console.log(indices);
+                // console.log(indices);
                 indis.push(...indices);
             }
             else {
