@@ -159,8 +159,9 @@ class Mesh {
      * @param {WebGLRenderingContext} gl 
      */
    render( gl ) {
-        //gl.cullFace( gl.BACK );
-        //gl.enable( gl.CULL_FACE );
+        gl.cullFace( gl.BACK );
+        gl.enable( gl.CULL_FACE );
+        gl.frontFace(gl.CW);
         
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.material.texture);
@@ -293,13 +294,15 @@ class Mesh {
                 vertices.push( 1.0, 1.0, 1.0, 1.0 );
             }
             else if( parts[0] == 'f' ) {
+                console.log(line);
                 let indices = [];
                 for (let i = 1; i < parts.length; i++) {
-                    let number = parseFloat(parts[i].split('/')[0]) - 1;
+                    let number = parseFloat(parts[i].split('/')[0])-1;
                     if(! isNaN(parseFloat(number))) {
                         indices.push(number);
                     }
                 }
+                console.log(indices);
                 indis.push(...indices);
             }
             else {
