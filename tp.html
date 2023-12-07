@@ -213,6 +213,16 @@
                 }
             `;
 
+            let heights = [
+                [.5,.5,.2,.2,.2,.1,.1,.1,.1,.1],
+                [.5,.5,.2,.1,0.1,0,0,0,0,0],
+                [.2,.2,.1,0,0,0,0,0,0,.1],
+                [.2,.1,0,0,0,0,0,0,.1,.2],
+                [.1,0,0,0,0,0,0,0,.1,.2],
+                [0,0,0,0,0.7,0,0,0.5,.1,.2],
+                [0,0,0.5,0.9,0.8,0.5,0,.1,.2,.2],
+            ];
+
             let shader_program = 
                 create_compile_and_link_program( gl, vertex_source, fragment_source );
             gl.useProgram( shader_program );
@@ -239,13 +249,24 @@
 
             let dirt_texture = gl.createTexture();
             let dirt_image = new Image();
-            dirt_image.src = 'minecraft_dirt.png';
+            dirt_image.src = 'dirt.jpg';
             dirt_image.onload = on_load_dirt;
             function on_load_dirt(){
                 gl.bindTexture(gl.TEXTURE_2D, dirt_texture);
                 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, dirt_image);
                 gl.generateMipmap(gl.TEXTURE_2D);
             };
+
+            let sky_texture = gl.createTexture();
+            let sky_image = new Image();
+            sky_image.src = 'sky.png';
+            sky_image.onload = on_load_sky;
+            function on_load_sky(){
+                gl.bindTexture(gl.TEXTURE_2D, sky_texture);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, sky_image);
+                gl.generateMipmap(gl.TEXTURE_2D);
+            };
+
             set_render_params( gl );
             set_render_params( gl );
             Mesh.from_obj_file(gl, "cow.obj", shader_program, "CowImage.png", function (loaded_mesh){
@@ -283,12 +304,22 @@
                 const metal_material = new Material(0.25, 1.0, 2.0, 4, metal_texture);
                 const dirt_material = new Material(0.25, 1.0, 1.0, 1, dirt_texture);
                 const disco_material = new Material(0.25, 1.0, 2.0, 4, disco_tex);
+                const sky_material = new Material(1.5, 0.0, 0.0, 1, sky_texture);
 
-                let discoball = Mesh.make_uv_sphere( gl, shader_program, 20, disco_material);
+                let discoball = Mesh.make_uv_sphere( gl, shader_program, 20, disco_material, false);
                 let stage = Mesh.box(gl, shader_program, 4, 0.5, 1, metal_material);
                 let projection = Mat4.perspective_fovx( 0.25, 4 / 3, 0.25, 64 );
+                let sky = Mesh.make_uv_sphere(gl, shader_program, 20, sky_material, true);
+                let ground = Mesh.from_heightmap(gl, shader_program, heights, 0, 0, dirt_material);
 
                 let rootNode = new Node();
+                let skyNode = rootNode.add_child();
+                let groundNode = rootNode.add_child();
+                groundNode.data = ground;
+                groundNode.scale = new Vec4(10,10,10,1);
+                groundNode.position = new Vec4(0,-0.3,0,1);
+                skyNode.data = sky;
+                skyNode.scale = new Vec4(100, 100, 100, 1);
                 let stageNode = rootNode.add_child();
                 stageNode.data = stage;
                 let ballone = stageNode.add_child();
